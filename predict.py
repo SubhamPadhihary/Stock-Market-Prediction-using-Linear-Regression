@@ -85,4 +85,3 @@ if __name__ == "__main__":
     predict.visualize_bar()
     print(predict.res_df)
     print('regular score: ', predict.get_explained_variance_score())
-    # print('K-fold score: ', predict.get_kfold_score())
