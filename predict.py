@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import joblib
 import pandas as pd
 from sklearn import model_selection
+from sklearn.metrics import explained_variance_score
 
 # To ignore a warning.
 pd.options.mode.chained_assignment = None
@@ -17,17 +18,17 @@ class Predict:
         self.start = start
         self.end = end
         self.data = None
-        self.prediction = None
-        self.res_df = None
+        self.y_predict = None  # y predict
+        self.res_df = None  # for visualization
         self.model = None
-        # get the model
+        # get the saved model
         self.model = joblib.load('trained_linear_regression_model')
         self.X = None
         self.y = None
     
     def show_correlation(self):
         corr = self.data.corr(method='pearson')
-        sb.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, annot=True, cmap='Greys')
+        sb.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, annot=True, cmap='RdBu_r', linewidths=0.5)
         plt.show()
     
     def get_X_y(self):
@@ -49,39 +50,39 @@ class Predict:
         Xy_df['Year'] = Xy_df['Date'].dt.year
         Xy_df = Xy_df[['Day', 'Month','Year', 'High', 'Low', 'Open', 'Close']]
         return Xy_df
-    def predict(self):
+    def predict_y(self):
         # get input, output datasets.
         self.X, self.y = self.get_X_y()
         # get the prediction of X.
-        self.prediction = self.model.predict(self.X)
-    def visualize(self):
-        self.res_df = pd.DataFrame({'Actual': self.data['Close'], 'Predicted': self.prediction})
+        self.y_predict = self.model.predict(self.X)
+    def visualize_close(self):
+        self.res_df = pd.DataFrame({'Actual Close Price': self.data['Close'], 'Predicted Close Price': self.y_predict})
         plt.figure(figsize=(16,8))
         plt.style.use('fivethirtyeight')
         plt.plot(self.data['Date'], self.data['Close'], c='b', label='actual')
-        plt.plot(self.data['Date'], self.prediction, c='r', label='predicted')
+        plt.plot(self.data['Date'], self.y_predict, c='r', label='predicted')
         plt.xlabel('Date')
-        plt.ylabel('Closing price in USD')
+        plt.ylabel('Closing price')
         plt.title(self.stock_name + ' stock prediction')
         plt.legend()
         plt.show()
-    def get_model_score(self):
-        return self.model.score(self.X, self.y) * 100
-    def get_kfold_score(self):
-        kfold = model_selection.KFold(n_splits=20, shuffle=True, random_state=100)
-        results_kfold = model_selection.cross_val_score(self.model, self.X, self.y.astype('int'), cv=kfold)
-        kfold_score = results_kfold.mean() * 100
-        return kfold_score
+    def visualize_bar(self):
+        self.res_df.head(20).plot(kind='bar', figsize=(16,8))
+        plt.xlabel('index')
+        plt.ylabel('Closing Price')
+        plt.show()
+    def get_explained_variance_score(self):
+        return explained_variance_score(self.y, self.y_predict) * 100
 
 if __name__ == "__main__":
     stock_name = input('Enter the stock name(Yahoo): ')
     start = input('Enter starting date(yyyy-mm-dd), eg-2017-01-21: ')
     end = input('Enter starting date(yyyy-mm-dd), eg-2017-01-21: ')
     predict = Predict(stock_name, start, end)
-    predict.predict()
+    predict.predict_y()
     predict.show_correlation()
-    predict.visualize()
-    print('regular score: ', predict.get_model_score())
-    print('kfold score: ', predict.get_kfold_score())
-    input('Hit Return(Enter) to exit. ')
-
+    predict.visualize_close()
+    predict.visualize_bar()
+    print(predict.res_df)
+    print('regular score: ', predict.get_explained_variance_score())
+    # print('K-fold score: ', predict.get_kfold_score())
