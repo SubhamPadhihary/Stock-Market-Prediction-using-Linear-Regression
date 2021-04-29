@@ -1,10 +1,4 @@
 # Stock-Market-Prediction-using-Linear-Regression
+Predict Closing Price of a stock within a range of date.
 
-Predict the closing price of a stock using linear regression. 
-
-## Installation
-
-1. Install Python.
-2. Clone this repository and navigate to it in terminal.
-3. ```pip install -r requirements.txt```
-4. Run predict.py
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/subhampadhihary/stock-market-prediction-using-linear-regression)
